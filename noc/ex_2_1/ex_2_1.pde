@@ -1,24 +1,39 @@
-Mover[] movers = new Mover[100];
+Mover[] movers = new Mover[30];
+Liquid liquid;
+
 void setup() {
     size(640, 360);
     smooth();
     background(255);
-    
     for (int i = 0; i < movers.length; i++) {
-        movers[i] = new Mover(random(0.1,5), 0, 0);
+        movers[i] = new Mover(random(0.2,5), random(0,width), 0);
     }
+    liquid = new Liquid(0, height/2, width, height/2, 0.05);
 }
 
 void draw() {
     background(255);
 
+    // PVector wind = new PVector(0.002, 0);
+    liquid.display();
+
     for (int i = 0; i < movers.length; i++) {
 
-        PVector wind = new PVector(0.001, 0);
-        float m = movers[i].mass;
-        PVector gravity = new PVector(0, 0.1*m);
+        if (movers[i].isInside(liquid)) {
+            movers[i].drag(liquid);
+        }
 
-        movers[i].applyForce(wind);
+        float m = 0.1 * movers[i].mass;
+        PVector gravity = new PVector(0, m);
+        
+        float c = 0.005;
+        // PVector friction = movers[i].velocity.get();
+        // friction.mult(-1);
+        // friction.normalize();
+        // friction.mult(c);
+
+        // movers[i].applyForce(friction);
+        // movers[i].applyForce(wind);
         movers[i].applyForce(gravity);
 
         movers[i].update();
@@ -73,5 +88,45 @@ class Mover {
     void applyForce(PVector force) {
         PVector f = PVector.div(force, mass);
         acceleration.add(f);
+    }
+
+    boolean isInside(Liquid l) {
+        if (location.x > l.x && location.x < l.x+l.w && location.y > l.y && location.y < l.y+l.h)
+        {
+            return true;
+        }
+        return false;
+    }
+
+    void drag(Liquid l) {
+        float speed = velocity.mag();
+        float dragMagnitude = l.c * speed * speed;
+
+        PVector drag = velocity.get();
+        drag.mult(-1);
+        drag.normalize();
+
+        drag.mult(dragMagnitude);
+
+        applyForce(drag);
+    }
+}
+
+class Liquid {
+    float x, y, w, h;
+    float c;
+
+    Liquid(float x_, float y_, float w_, float h_, float c_) {
+        x =  x_;
+        y =  y_;
+        w = w_;
+        h = h_;
+        c = c_;
+    }
+
+    void display() {
+        noStroke();
+        fill(175);
+        rect(x,y,w,h);
     }
 }
