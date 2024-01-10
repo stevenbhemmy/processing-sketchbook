@@ -80,7 +80,7 @@ class Mover {
             location.y = height;
         } else if (location.y < 0) {
             velocity.y *= -1;
-            location.y = 0;
+            location.y = -1;
         }
 
     }
@@ -130,3 +130,4 @@ class Liquid {
         rect(x,y,w,h);
     }
 }
+
