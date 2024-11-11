@@ -1,4 +1,4 @@
-Mover m;
+Mover[] movers = new Mover[10];
 Attractor a;
 Liquid liquid;
 
@@ -6,7 +6,9 @@ void setup() {
     size(640, 360);
     smooth();
     background(255);
-    m = new Mover();
+    for (int i = 0; i < movers.length; i++) {
+        movers[i] = new Mover(random(0.1, 2), random(width), random(height));
+    }
     a = new Attractor();
 
 
@@ -15,19 +17,26 @@ void setup() {
 void draw() {
     background(255);
 
-    PVector f = a.attract(m);
-    m.applyForce(f);
-
-    m.update();
-
     a.display();
-    m.display();
+
+    for (int i = 0; i < movers.length; i++) {
+        for (int j = 0; j < movers.length; j++) {
+            if (i != j) {
+                PVector force = movers[j].attract(movers[i]);
+                movers[i].applyForce(force);
+            }
+        }
+        movers[i].update();
+        movers[i].display();
+    }
+
 }
 
 class Mover {
     PVector location;
     PVector velocity;
     PVector acceleration;
+    float G = 0.4;
     float mass;
 
     Mover() {
@@ -98,6 +107,17 @@ class Mover {
         drag.mult(dragMagnitude);
 
         applyForce(drag);
+    }
+
+    PVector attract(Mover m) {
+        PVector force = PVector.sub(location, m.location);
+        float distance = force.mag();
+        distance = constrain(distance, 5.0, 25.0);
+        force.normalize();
+        float strength = (G * mass * m.mass) / (distance * distance);
+        force.mult(strength);
+
+        return force;
     }
 }
 
